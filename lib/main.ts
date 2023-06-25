@@ -57,6 +57,7 @@ export default {
           );
         });
 
+        console.log("upload result", result);
         return { ...file, url: `${baseOrigin}/${fileKey}` };
       },
 
@@ -72,7 +73,7 @@ export default {
               ContentType: file.mime,
               Region: region,
             },
-            (err, data) => {
+            (err) => {
               if (err) {
                 reject(err);
               } else {
@@ -96,7 +97,7 @@ export default {
               Key: key,
               Region: region,
             },
-            (err, data) => {
+            (err) => {
               if (err) {
                 reject(err);
               } else {
