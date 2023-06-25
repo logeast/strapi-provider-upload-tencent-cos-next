@@ -1,4 +1,7 @@
-name: 发布 Node.js 包
+# This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
+# For more information see: https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
+
+name: Node.js Package
 
 on:
   push:
@@ -6,60 +9,26 @@ on:
       - main
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: 检出代码
-        uses: actions/checkout@v2
-
-      - name: 设置 Node.js 环境
-        uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: '14.x'
+          node-version: 16
+      - run: npm install
+      - run: npm run build
 
-      - name: 安装依赖
-        run: npm ci
-
-      - name: 构建项目
-        run: npm run build
-      
-      - name: 更新软件包版本号
-        id: pre-release-version
-        uses: adobe/update-prerelease-npm-version@v1.0.0
+  publish-npm:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          pre-release-tag: 'next'
-        
-      - name: 显示更新后的版本号
-        run: echo ${{ steps.pre-release-version.outputs.pre-release-version }}
-
-      # - name: 将软件包发布到 GitHub Packages
-      #   run: npm publish --access public
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-
-      - name: 将软件包发布到 NPM
-        run: npm publish --tag next
+          node-version: 16
+          registry-url: https://registry.npmjs.org/
+      - run: npm ci
+      - run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-      
-      - name: 创建新的 Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ env.npm_package_version }}
-          release_name: Release v${{ env.npm_package_version }}
-          body: Release v${{ env.npm_package_version }}
-      
-      - name: 上传发布文件
-        id: upload-release-asset 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./strapi-provider-upload-tencent-cos-next-v{{ env.npm_package_version }}.zip
-          asset_name: strapi-provider-upload-tencent-cos-next-v{{ env.npm_package_version }}.zip
-          asset_content_type: application/zip
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
