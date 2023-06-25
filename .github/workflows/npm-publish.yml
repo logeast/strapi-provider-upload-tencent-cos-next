@@ -33,10 +33,10 @@ jobs:
       - name: 显示更新后的版本号
         run: echo ${{ steps.pre-release-version.outputs.pre-release-version }}
 
-      - name: 将软件包发布到 GitHub Packages
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      # - name: 将软件包发布到 GitHub Packages
+      #   run: npm publish --access public
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       - name: 将软件包发布到 NPM
         run: npm publish --tag next
